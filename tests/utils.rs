@@ -5,6 +5,7 @@ use std::env::{self, VarError};
 use std::time::Duration;
 
 use rand::Rng;
+use rdkafka::producer::future_producer::MessageInfo;
 use regex::Regex;
 
 use rdkafka::admin::{AdminClient, AdminOptions, NewTopic, TopicReplication};
@@ -148,7 +149,11 @@ where
     let mut message_map = HashMap::new();
     for (id, future) in futures {
         match future.await {
-            Ok((partition, offset)) => message_map.insert((partition, offset), id),
+            Ok(MessageInfo {
+                partition,
+                offset,
+                timestamp: _,
+            }) => message_map.insert((partition, offset), id),
             Err((kafka_error, _message)) => panic!("Delivery failed: {}", kafka_error),
         };
     }

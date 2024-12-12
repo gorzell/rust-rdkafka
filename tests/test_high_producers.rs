@@ -9,6 +9,7 @@ use rdkafka::client::DefaultClientContext;
 use rdkafka::config::ClientConfig;
 use rdkafka::error::{KafkaError, RDKafkaErrorCode};
 use rdkafka::message::{Header, Headers, Message, OwnedHeaders};
+use rdkafka::producer::future_producer::MessageInfo;
 use rdkafka::producer::{FutureProducer, FutureRecord, Producer};
 use rdkafka::util::Timeout;
 
@@ -44,7 +45,11 @@ async fn test_future_producer_send() {
     let results: Vec<_> = results.collect().await;
     assert!(results.len() == 10);
     for (i, result) in results.into_iter().enumerate() {
-        let (partition, offset) = result.unwrap();
+        let MessageInfo {
+            partition,
+            offset,
+            timestamp: _,
+        } = result.unwrap();
         assert_eq!(partition, 1);
         assert_eq!(offset, i as i64);
     }
